@@ -7,8 +7,18 @@ import { UpdateBookDto } from './dto/update-book.dto';
 export class BooksService {
   constructor(private prisma: PrismaService) {}
 
-  create(data: CreateBookDto) {
-    return this.prisma.book.create({ data });
+  create(data: CreateBookDto & { userId: number }) {
+    return this.prisma.book.create({
+      data: {
+        title: data.title,
+        author: data.author,
+        review: data.review,
+        user: {
+          connect: { id: data.userId },
+        },
+      },
+      include: { user: true },
+    });
   }
 
   async findAll(role: string, userId: number) {
@@ -17,14 +27,13 @@ export class BooksService {
         include: { user: true },
       });
     }
-  
+
     // ✅ USER ได้แค่หนังสือของตัวเอง
     return this.prisma.book.findMany({
       where: { userId },
       include: { user: true },
     });
   }
-  
 
   findOne(id: number) {
     return this.prisma.book.findUnique({
