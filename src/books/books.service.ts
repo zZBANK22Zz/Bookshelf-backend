@@ -45,7 +45,14 @@ export class BooksService {
   update(id: number, data: UpdateBookDto) {
     return this.prisma.book.update({
       where: { id },
-      data,
+      data: {
+        title: data.title,
+        author: data.author,
+        review: data.review,
+      },
+      include: {
+        user: true,
+      },
     });
   }
 

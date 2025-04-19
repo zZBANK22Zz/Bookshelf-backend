@@ -15,6 +15,7 @@ import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Request as ExpressRequest } from 'express';
 
 @Controller('books')
 @UseGuards(JwtAuthGuard)
@@ -22,8 +23,12 @@ export class BooksController {
   constructor(private readonly booksService: BooksService) {}
 
   @Post()
-  create(@Body() dto: CreateBookDto) {
-    return this.booksService.create(dto);
+  create(@Body() dto: CreateBookDto, @Request() req: ExpressRequest & { user?: any }) {
+    const userId = req.user?.userId;
+    if (!userId) {
+      throw new ForbiddenException('User ID not found in request');
+    }
+    return this.booksService.create({ ...dto, userId });
   }
 
   @Get()
